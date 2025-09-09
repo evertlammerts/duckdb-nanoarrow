@@ -24,7 +24,7 @@ class ArrowFileScan;
 struct ArrowFileLocalState : public LocalTableFunctionState {
  public:
   explicit ArrowFileLocalState(ExecutionContext& execution_context)
-      : execution_context(execution_context){};
+      : execution_context(execution_context) {};
   //! Factory Pointer
   shared_ptr<ArrowFileScan> file_scan;
 
@@ -43,7 +43,7 @@ struct ArrowFileGlobalState : public GlobalTableFunctionState {
   ArrowFileGlobalState(ClientContext& context_p, idx_t total_file_count,
                        const MultiFileBindData& bind_data,
                        MultiFileGlobalState& global_state)
-      : global_state(global_state), context(context_p){};
+      : global_state(global_state), context(context_p) {};
 
   ~ArrowFileGlobalState() override = default;
 

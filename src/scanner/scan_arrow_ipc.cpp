@@ -8,9 +8,9 @@
 #include "ipc/stream_reader/base_stream_reader.hpp"
 
 #include "duckdb/function/function.hpp"
+#include "duckdb/function/table/arrow.hpp"
 #include "duckdb/function/table/arrow/arrow_duck_schema.hpp"
 #include "duckdb/function/table_function.hpp"
-#include "duckdb/function/table/arrow.hpp"
 #include "duckdb/main/config.hpp"
 #include "duckdb/main/extension/extension_loader.hpp"
 
