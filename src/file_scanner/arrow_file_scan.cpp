@@ -1,5 +1,6 @@
-#include "file_scanner/arrow_file_scan.hpp"
+#include "duckdb/function/table/arrow.hpp"
 
+#include "file_scanner/arrow_file_scan.hpp"
 #include "file_scanner/arrow_multi_file_info.hpp"
 
 namespace duckdb {
@@ -13,9 +14,10 @@ ArrowFileScan::ArrowFileScan(ClientContext& context, const string& file_name)
   factory->InitReader();
   factory->GetFileSchema(schema_root);
   DBConfig& config = DatabaseInstance::GetDatabase(context).config;
-  ArrowTableFunction::PopulateArrowTableType(config, arrow_table_type, schema_root, names,
-                                             types);
-  QueryResult::DeduplicateColumns(names);
+  ArrowTableFunction::PopulateArrowTableSchema(
+    config, arrow_table, schema_root.arrow_schema);
+  names = arrow_table.GetNames();
+  types = arrow_table.GetTypes();
   if (types.empty()) {
     throw InvalidInputException("Provided table/dataframe must have at least one column");
   }
@@ -45,7 +47,7 @@ bool ArrowFileScan::TryInitializeScan(ClientContext& context,
   lstate.local_arrow_function_data = make_uniq<ArrowScanFunctionData>(
       &FileIPCStreamFactory::Produce, reinterpret_cast<uintptr_t>(factory.get()));
   lstate.local_arrow_function_data->schema_root = schema_root;
-  lstate.local_arrow_function_data->arrow_table = arrow_table_type;
+  lstate.local_arrow_function_data->arrow_table = arrow_table;
   if (!column_indexes.empty()) {
     lstate.init_input = make_uniq<TableFunctionInitInput>(
         *lstate.local_arrow_function_data, column_indexes,

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "duckdb/function/table/arrow.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
 
 #include "duckdb.hpp"
 
@@ -26,7 +27,7 @@ struct ArrowIPCBuffer {
 //! of CDataInterface header pointers, it takes a bunch of pointers pointing to
 //! buffers containing data in Arrow IPC format
 struct ScanArrowIPC {
-  static void RegisterReadArrowStream(DatabaseInstance& db);
+  static void RegisterReadArrowStream(ExtensionLoader &loader);
 };
 }  // namespace ext_nanoarrow
 }  // namespace duckdb

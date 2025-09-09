@@ -7,7 +7,8 @@
 #include "duckdb/common/arrow/arrow_converter.hpp"
 #include "duckdb/common/serializer/buffered_file_writer.hpp"
 #include "duckdb/function/copy_function.hpp"
-#include "duckdb/main/extension_util.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
+#include "duckdb/main/settings.hpp"
 
 #include "nanoarrow/nanoarrow_ipc.hpp"
 
@@ -106,7 +107,7 @@ unique_ptr<FunctionData> ArrowWriteBind(ClientContext& context,
   }
 
   if (row_group_size_bytes_set) {
-    if (DBConfig::GetConfig(context).options.preserve_insertion_order) {
+    if (DBConfig::GetSetting<PreserveInsertionOrderSetting>(context)) {
       throw BinderException(
           "ROW_GROUP_SIZE_BYTES does not work while preserving insertion order. Use "
           "\"SET preserve_insertion_order=false;\" to disable preserving insertion "
@@ -246,7 +247,7 @@ void ArrowWriteFlushBatch(ClientContext& context, FunctionData& bind_data,
 
 }  // namespace
 
-void RegisterArrowStreamCopyFunction(DatabaseInstance& db) {
+void RegisterArrowStreamCopyFunction(ExtensionLoader &loader) {
   CopyFunction function("arrows");
   function.copy_to_bind = ArrowWriteBind;
   function.copy_to_initialize_global = ArrowWriteInitializeGlobal;
@@ -264,11 +265,11 @@ void RegisterArrowStreamCopyFunction(DatabaseInstance& db) {
   function.rotate_next_file = ArrowWriteRotateNextFile;
 
   function.extension = "arrows";
-  ExtensionUtil::RegisterFunction(db, function);
+  loader.RegisterFunction(function);
 
   function.name = "arrow";
   function.extension = "arrow";
-  ExtensionUtil::RegisterFunction(db, function);
+  loader.RegisterFunction(function);
 }
 
 }  // namespace ext_nanoarrow

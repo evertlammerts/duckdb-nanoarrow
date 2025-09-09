@@ -23,8 +23,8 @@ bool ArrowMultiFileInfo::ParseCopyOption(ClientContext& context, const string& k
   return false;
 }
 
-unique_ptr<MultiFileReaderInterface> ArrowMultiFileInfo::InitializeInterface(
-    ClientContext& context, MultiFileReader& reader, MultiFileList& file_list) {
+unique_ptr<MultiFileReaderInterface> ArrowMultiFileInfo::CreateInterface(
+    ClientContext& context) {
   return make_uniq<ArrowMultiFileInfo>();
 }
 

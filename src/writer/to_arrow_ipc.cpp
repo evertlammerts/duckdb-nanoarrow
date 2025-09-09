@@ -1,14 +1,12 @@
 #include "writer/to_arrow_ipc.hpp"
 
-#include "duckdb/main/extension_util.hpp"
-
 #include "writer/column_data_collection_serializer.hpp"
 
 #include "duckdb/common/arrow/arrow_appender.hpp"
 #include "duckdb/function/function.hpp"
 #include "duckdb/function/table_function.hpp"
-
 #include "duckdb/main/client_context.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
 
 namespace duckdb {
 
@@ -189,9 +187,9 @@ TableFunction ToArrowIPCFunction::GetFunction() {
   return fun;
 }
 
-void ToArrowIPCFunction::RegisterToIPCFunction(DatabaseInstance& db) {
+void ToArrowIPCFunction::RegisterToIPCFunction(ExtensionLoader &loader) {
   const auto function = GetFunction();
-  ExtensionUtil::RegisterFunction(db, function);
+  loader.RegisterFunction(function);
 }
 }  // namespace ext_nanoarrow
 }  // namespace duckdb

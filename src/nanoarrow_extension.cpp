@@ -6,7 +6,7 @@
 #include "writer/to_arrow_ipc.hpp"
 
 #include "duckdb/function/scalar_function.hpp"
-#include "duckdb/main/extension_util.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
 
 #include "nanoarrow/nanoarrow.hpp"
 
@@ -16,54 +16,47 @@
 
 namespace duckdb {
 
-namespace {
+  namespace {
 
-struct NanoarrowVersion {
-  static void Register(DatabaseInstance& db) {
-    auto fn = ScalarFunction("nanoarrow_version", {}, LogicalType::VARCHAR, ExecuteFn);
-    ExtensionUtil::RegisterFunction(db, fn);
-  }
+    struct NanoarrowVersion {
+      static void Register(ExtensionLoader &loader) {
+        auto fn = ScalarFunction("nanoarrow_version", {}, LogicalType::VARCHAR, ExecuteFn);
+        loader.RegisterFunction(fn);
+      }
 
-  static void ExecuteFn(DataChunk& args, ExpressionState& state, Vector& result) {
-    result.SetValue(0, StringVector::AddString(result, ArrowNanoarrowVersion()));
-    result.SetVectorType(VectorType::CONSTANT_VECTOR);
-  }
-};
+      static void ExecuteFn(DataChunk& args, ExpressionState& state, Vector& result) {
+        result.SetValue(0, StringVector::AddString(result, ArrowNanoarrowVersion()));
+        result.SetVectorType(VectorType::CONSTANT_VECTOR);
+      }
+    };
 
-void LoadInternal(DatabaseInstance& db) {
-  NanoarrowVersion::Register(db);
-  ext_nanoarrow::RegisterReadArrowStream(db);
-  ext_nanoarrow::RegisterArrowStreamCopyFunction(db);
+    void LoadInternal(ExtensionLoader &loader) {
+      NanoarrowVersion::Register(loader);
+      ext_nanoarrow::RegisterReadArrowStream(loader);
+      ext_nanoarrow::RegisterArrowStreamCopyFunction(loader);
 
-  ext_nanoarrow::ScanArrowIPC::RegisterReadArrowStream(db);
-  ext_nanoarrow::ToArrowIPCFunction::RegisterToIPCFunction(db);
-}
+      ext_nanoarrow::ScanArrowIPC::RegisterReadArrowStream(loader);
+      ext_nanoarrow::ToArrowIPCFunction::RegisterToIPCFunction(loader);
+    }
 
-}  // namespace
+  }  // namespace
 
-void NanoarrowExtension::Load(DuckDB& db) { LoadInternal(*db.instance); }
-std::string NanoarrowExtension::Name() { return "nanoarrow"; }
+  void NanoarrowExtension::Load(ExtensionLoader &loader) { LoadInternal(loader); }
 
-std::string NanoarrowExtension::Version() const {
+  std::string NanoarrowExtension::Name() { return "nanoarrow"; }
+
+  std::string NanoarrowExtension::Version() const {
 #ifdef EXT_VERSION_NANOARROW
-  return EXT_VERSION_NANOARROW;
+    return EXT_VERSION_NANOARROW;
 #else
-  return "";
+    return "";
 #endif
-}
+  }
 
 }  // namespace duckdb
 
-extern "C" {
-
-DUCKDB_EXTENSION_API void nanoarrow_init(duckdb::DatabaseInstance& db) {
-  duckdb::DuckDB db_wrapper(db);
-  db_wrapper.LoadExtension<duckdb::NanoarrowExtension>();
-}
-
-DUCKDB_EXTENSION_API const char* nanoarrow_version() {
-  return duckdb::DuckDB::LibraryVersion();
-}
+DUCKDB_CPP_EXTENSION_ENTRY(nanoarrow, loader) {
+  duckdb::LoadInternal(loader);
 }
 
 #ifndef DUCKDB_EXTENSION_MAIN
