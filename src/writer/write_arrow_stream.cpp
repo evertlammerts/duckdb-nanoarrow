@@ -247,7 +247,7 @@ void ArrowWriteFlushBatch(ClientContext& context, FunctionData& bind_data,
 
 }  // namespace
 
-void RegisterArrowStreamCopyFunction(ExtensionLoader &loader) {
+void RegisterArrowStreamCopyFunction(ExtensionLoader& loader) {
   CopyFunction function("arrows");
   function.copy_to_bind = ArrowWriteBind;
   function.copy_to_initialize_global = ArrowWriteInitializeGlobal;

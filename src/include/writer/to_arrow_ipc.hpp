@@ -29,7 +29,7 @@ class ToArrowIPCFunction {
   static constexpr idx_t DEFAULT_CHUNK_SIZE = 120;
 
   static TableFunction GetFunction();
-  static void RegisterToIPCFunction(ExtensionLoader &loader);
+  static void RegisterToIPCFunction(ExtensionLoader& loader);
 
  private:
   static unique_ptr<LocalTableFunctionState> InitLocal(

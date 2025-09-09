@@ -13,7 +13,7 @@
 namespace duckdb {
 namespace ext_nanoarrow {
 
-void RegisterArrowStreamCopyFunction(ExtensionLoader &loader);
+void RegisterArrowStreamCopyFunction(ExtensionLoader& loader);
 
 }  // namespace ext_nanoarrow
 }  // namespace duckdb

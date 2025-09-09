@@ -17,7 +17,7 @@ namespace ext_nanoarrow {
 
 TableFunction ReadArrowStreamFunction();
 
-void RegisterReadArrowStream(ExtensionLoader &loader);
+void RegisterReadArrowStream(ExtensionLoader& loader);
 
 }  // namespace ext_nanoarrow
 }  // namespace duckdb

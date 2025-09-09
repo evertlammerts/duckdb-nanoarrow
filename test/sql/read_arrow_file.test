@@ -1,6 +1,6 @@
 # name: test/sql/read_arrow_file.test
 # description: test nanoarrow extension when reading arrow file (with footer)
-# group: [nanoarrow]
+# group: [sql]
 
 # The files here should be generated with "with pa.ipc.new_file(file_path, table.schema) as writer:"
 # Require statement will ensure this test is run with this extension loaded

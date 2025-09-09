@@ -75,7 +75,7 @@ struct ReadArrowStream : ArrowTableFunction {
 
 TableFunction ReadArrowStreamFunction() { return ReadArrowStream::Function(); }
 
-void RegisterReadArrowStream(ExtensionLoader &loader) {
+void RegisterReadArrowStream(ExtensionLoader& loader) {
   auto function = ReadArrowStream::Function();
   loader.RegisterFunction(function);
   // So we can accept a list of paths as well e.g., ['file_1.arrow','file_2.arrow']

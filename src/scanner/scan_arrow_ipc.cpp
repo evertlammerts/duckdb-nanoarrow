@@ -66,7 +66,7 @@ struct ScanArrowIPCFunction : ArrowTableFunction {
   }
 };
 
-void ScanArrowIPC::RegisterReadArrowStream(ExtensionLoader &loader) {
+void ScanArrowIPC::RegisterReadArrowStream(ExtensionLoader& loader) {
   auto function = ScanArrowIPCFunction::Function();
   loader.RegisterFunction(function);
 }

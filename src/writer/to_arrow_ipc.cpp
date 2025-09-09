@@ -187,7 +187,7 @@ TableFunction ToArrowIPCFunction::GetFunction() {
   return fun;
 }
 
-void ToArrowIPCFunction::RegisterToIPCFunction(ExtensionLoader &loader) {
+void ToArrowIPCFunction::RegisterToIPCFunction(ExtensionLoader& loader) {
   const auto function = GetFunction();
   loader.RegisterFunction(function);
 }

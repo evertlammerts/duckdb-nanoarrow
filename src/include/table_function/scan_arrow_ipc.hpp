@@ -18,7 +18,7 @@ namespace ext_nanoarrow {
 
 //! Arrow IPC Buffer, basically a pointer to the buffer and its size
 struct ArrowIPCBuffer {
-  ArrowIPCBuffer(const uint64_t ptr, const uint64_t size) : ptr(ptr), size(size) {};
+  ArrowIPCBuffer(const uint64_t ptr, const uint64_t size) : ptr(ptr), size(size){};
   uint64_t ptr;
   uint64_t size;
 };
@@ -27,7 +27,7 @@ struct ArrowIPCBuffer {
 //! of CDataInterface header pointers, it takes a bunch of pointers pointing to
 //! buffers containing data in Arrow IPC format
 struct ScanArrowIPC {
-  static void RegisterReadArrowStream(ExtensionLoader &loader);
+  static void RegisterReadArrowStream(ExtensionLoader& loader);
 };
 }  // namespace ext_nanoarrow
 }  // namespace duckdb

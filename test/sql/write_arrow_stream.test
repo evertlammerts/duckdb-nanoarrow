@@ -1,6 +1,6 @@
 # name: test/sql/write_arrow_stream.test
 # description: test nanoarrow extension
-# group: [nanoarrow]
+# group: [sql]
 
 # Require statement will ensure this test is run with this extension loaded
 require nanoarrow

@@ -14,8 +14,8 @@ ArrowFileScan::ArrowFileScan(ClientContext& context, const string& file_name)
   factory->InitReader();
   factory->GetFileSchema(schema_root);
   DBConfig& config = DatabaseInstance::GetDatabase(context).config;
-  ArrowTableFunction::PopulateArrowTableSchema(
-    config, arrow_table, schema_root.arrow_schema);
+  ArrowTableFunction::PopulateArrowTableSchema(config, arrow_table,
+                                               schema_root.arrow_schema);
   names = arrow_table.GetNames();
   types = arrow_table.GetTypes();
   if (types.empty()) {

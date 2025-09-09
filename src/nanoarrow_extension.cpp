@@ -1,5 +1,3 @@
-#define DUCKDB_EXTENSION_MAIN
-
 #include "nanoarrow_extension.hpp"
 
 #include <string>
@@ -16,49 +14,45 @@
 
 namespace duckdb {
 
-  namespace {
+namespace {
 
-    struct NanoarrowVersion {
-      static void Register(ExtensionLoader &loader) {
-        auto fn = ScalarFunction("nanoarrow_version", {}, LogicalType::VARCHAR, ExecuteFn);
-        loader.RegisterFunction(fn);
-      }
-
-      static void ExecuteFn(DataChunk& args, ExpressionState& state, Vector& result) {
-        result.SetValue(0, StringVector::AddString(result, ArrowNanoarrowVersion()));
-        result.SetVectorType(VectorType::CONSTANT_VECTOR);
-      }
-    };
-
-    void LoadInternal(ExtensionLoader &loader) {
-      NanoarrowVersion::Register(loader);
-      ext_nanoarrow::RegisterReadArrowStream(loader);
-      ext_nanoarrow::RegisterArrowStreamCopyFunction(loader);
-
-      ext_nanoarrow::ScanArrowIPC::RegisterReadArrowStream(loader);
-      ext_nanoarrow::ToArrowIPCFunction::RegisterToIPCFunction(loader);
-    }
-
-  }  // namespace
-
-  void NanoarrowExtension::Load(ExtensionLoader &loader) { LoadInternal(loader); }
-
-  std::string NanoarrowExtension::Name() { return "nanoarrow"; }
-
-  std::string NanoarrowExtension::Version() const {
-#ifdef EXT_VERSION_NANOARROW
-    return EXT_VERSION_NANOARROW;
-#else
-    return "";
-#endif
+struct NanoarrowVersion {
+  static void Register(ExtensionLoader& loader) {
+    auto fn = ScalarFunction("nanoarrow_version", {}, LogicalType::VARCHAR, ExecuteFn);
+    loader.RegisterFunction(fn);
   }
+
+  static void ExecuteFn(DataChunk& args, ExpressionState& state, Vector& result) {
+    result.SetValue(0, StringVector::AddString(result, ArrowNanoarrowVersion()));
+    result.SetVectorType(VectorType::CONSTANT_VECTOR);
+  }
+};
+
+void LoadInternal(ExtensionLoader& loader) {
+  NanoarrowVersion::Register(loader);
+  ext_nanoarrow::RegisterReadArrowStream(loader);
+  ext_nanoarrow::RegisterArrowStreamCopyFunction(loader);
+
+  ext_nanoarrow::ScanArrowIPC::RegisterReadArrowStream(loader);
+  ext_nanoarrow::ToArrowIPCFunction::RegisterToIPCFunction(loader);
+}
+
+}  // namespace
+
+void NanoarrowExtension::Load(ExtensionLoader& loader) { LoadInternal(loader); }
+
+std::string NanoarrowExtension::Name() { return "nanoarrow"; }
+
+std::string NanoarrowExtension::Version() const {
+#ifdef EXT_VERSION_NANOARROW
+  return EXT_VERSION_NANOARROW;
+#else
+  return "";
+#endif
+}
 
 }  // namespace duckdb
 
-DUCKDB_CPP_EXTENSION_ENTRY(nanoarrow, loader) {
-  duckdb::LoadInternal(loader);
+extern "C" {
+DUCKDB_CPP_EXTENSION_ENTRY(nanoarrow, loader) { duckdb::LoadInternal(loader); }
 }
-
-#ifndef DUCKDB_EXTENSION_MAIN
-#error DUCKDB_EXTENSION_MAIN not defined
-#endif

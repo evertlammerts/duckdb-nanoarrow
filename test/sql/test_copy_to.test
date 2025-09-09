@@ -1,6 +1,6 @@
 # name: test/sql/test_copy_to.test
 # description: test copy to functionality and options
-# group: [nanoarrow]
+# group: [sql]
 
 # Require statement will ensure this test is run with this extension loaded
 require nanoarrow
