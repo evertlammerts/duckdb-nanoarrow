@@ -24,11 +24,27 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Build DuckDB (Python)
+    - name: Checkout DuckDB Python
+      uses: actions/checkout@v4
+      with:
+        repository: duckdb/duckdb-python
+        path: duckdb-python
+        fetch-depth: 0
+        submodules: true
+
+    - name: Checkout DuckDB
+      shell: bash
       run: |
         cd duckdb
+        git fetch origin
         git checkout main
-        cd tools/pythonpkg
+        cd ../duckdb-python/external/duckdb
+        git fetch origin
+        git checkout main
+
+    - name: Build DuckDB (Python)
+      run: |
+        cd duckdb-python
         python3 -m pip install .
 
     - name: Build Arrow Extension

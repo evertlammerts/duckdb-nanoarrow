@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 #pragma once
 #include "duckdb/function/table_function.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
 
 #include "nanoarrow/hpp/unique.hpp"
 
@@ -28,7 +29,7 @@ class ToArrowIPCFunction {
   static constexpr idx_t DEFAULT_CHUNK_SIZE = 120;
 
   static TableFunction GetFunction();
-  static void RegisterToIPCFunction(DatabaseInstance& db);
+  static void RegisterToIPCFunction(ExtensionLoader& loader);
 
  private:
   static unique_ptr<LocalTableFunctionState> InitLocal(

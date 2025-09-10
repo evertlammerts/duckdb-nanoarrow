@@ -32,7 +32,7 @@ class ArrowFileScan : public BaseFileReader {
   const vector<string>& GetNames();
   const vector<LogicalType>& GetTypes();
   ArrowSchemaWrapper schema_root;
-  ArrowTableType arrow_table_type;
+  ArrowTableSchema arrow_table;
 
   bool TryInitializeScan(ClientContext& context, GlobalTableFunctionState& gstate,
                          LocalTableFunctionState& lstate) override;

@@ -1,6 +1,5 @@
 
 #include "table_function/scan_arrow_ipc.hpp"
-#include "duckdb/main/extension_util.hpp"
 #include "ipc/stream_factory.hpp"
 #include "table_function/arrow_ipc_function_data.hpp"
 
@@ -9,9 +8,12 @@
 #include "ipc/stream_reader/base_stream_reader.hpp"
 
 #include "duckdb/function/function.hpp"
+#include "duckdb/function/table/arrow.hpp"
 #include "duckdb/function/table/arrow/arrow_duck_schema.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/config.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
+
 namespace duckdb {
 
 namespace ext_nanoarrow {
@@ -35,9 +37,9 @@ struct ScanArrowIPCFunction : ArrowTableFunction {
     res->factory->GetFileSchema(res->schema_root);
 
     DBConfig& config = DatabaseInstance::GetDatabase(context).config;
-    PopulateArrowTableType(config, res->arrow_table, res->schema_root, names,
-                           return_types);
-    QueryResult::DeduplicateColumns(names);
+    PopulateArrowTableSchema(config, res->arrow_table, res->schema_root.arrow_schema);
+    names = res->arrow_table.GetNames();
+    return_types = res->arrow_table.GetTypes();
     res->all_types = return_types;
     if (return_types.empty()) {
       throw InvalidInputException(
@@ -64,9 +66,9 @@ struct ScanArrowIPCFunction : ArrowTableFunction {
   }
 };
 
-void ScanArrowIPC::RegisterReadArrowStream(DatabaseInstance& db) {
+void ScanArrowIPC::RegisterReadArrowStream(ExtensionLoader& loader) {
   auto function = ScanArrowIPCFunction::Function();
-  ExtensionUtil::RegisterFunction(db, function);
+  loader.RegisterFunction(function);
 }
 
 }  // namespace ext_nanoarrow

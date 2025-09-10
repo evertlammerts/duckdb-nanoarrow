@@ -56,8 +56,7 @@ struct ArrowMultiFileInfo : MultiFileReaderInterface {
   unique_ptr<BaseFileReaderOptions> InitializeOptions(
       ClientContext& context, optional_ptr<TableFunctionInfo> info) override;
 
-  static unique_ptr<MultiFileReaderInterface> InitializeInterface(
-      ClientContext& context, MultiFileReader& reader, MultiFileList& file_list);
+  static unique_ptr<MultiFileReaderInterface> CreateInterface(ClientContext& context);
 
   bool ParseCopyOption(ClientContext& context, const string& key,
                        const vector<Value>& values, BaseFileReaderOptions& options,

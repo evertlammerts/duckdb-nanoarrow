@@ -1,12 +1,10 @@
-#define DUCKDB_EXTENSION_MAIN
-
 #include "nanoarrow_extension.hpp"
 
 #include <string>
 #include "writer/to_arrow_ipc.hpp"
 
 #include "duckdb/function/scalar_function.hpp"
-#include "duckdb/main/extension_util.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
 
 #include "nanoarrow/nanoarrow.hpp"
 
@@ -19,9 +17,9 @@ namespace duckdb {
 namespace {
 
 struct NanoarrowVersion {
-  static void Register(DatabaseInstance& db) {
+  static void Register(ExtensionLoader& loader) {
     auto fn = ScalarFunction("nanoarrow_version", {}, LogicalType::VARCHAR, ExecuteFn);
-    ExtensionUtil::RegisterFunction(db, fn);
+    loader.RegisterFunction(fn);
   }
 
   static void ExecuteFn(DataChunk& args, ExpressionState& state, Vector& result) {
@@ -30,18 +28,19 @@ struct NanoarrowVersion {
   }
 };
 
-void LoadInternal(DatabaseInstance& db) {
-  NanoarrowVersion::Register(db);
-  ext_nanoarrow::RegisterReadArrowStream(db);
-  ext_nanoarrow::RegisterArrowStreamCopyFunction(db);
+void LoadInternal(ExtensionLoader& loader) {
+  NanoarrowVersion::Register(loader);
+  ext_nanoarrow::RegisterReadArrowStream(loader);
+  ext_nanoarrow::RegisterArrowStreamCopyFunction(loader);
 
-  ext_nanoarrow::ScanArrowIPC::RegisterReadArrowStream(db);
-  ext_nanoarrow::ToArrowIPCFunction::RegisterToIPCFunction(db);
+  ext_nanoarrow::ScanArrowIPC::RegisterReadArrowStream(loader);
+  ext_nanoarrow::ToArrowIPCFunction::RegisterToIPCFunction(loader);
 }
 
 }  // namespace
 
-void NanoarrowExtension::Load(DuckDB& db) { LoadInternal(*db.instance); }
+void NanoarrowExtension::Load(ExtensionLoader& loader) { LoadInternal(loader); }
+
 std::string NanoarrowExtension::Name() { return "nanoarrow"; }
 
 std::string NanoarrowExtension::Version() const {
@@ -55,17 +54,5 @@ std::string NanoarrowExtension::Version() const {
 }  // namespace duckdb
 
 extern "C" {
-
-DUCKDB_EXTENSION_API void nanoarrow_init(duckdb::DatabaseInstance& db) {
-  duckdb::DuckDB db_wrapper(db);
-  db_wrapper.LoadExtension<duckdb::NanoarrowExtension>();
+DUCKDB_CPP_EXTENSION_ENTRY(nanoarrow, loader) { duckdb::LoadInternal(loader); }
 }
-
-DUCKDB_EXTENSION_API const char* nanoarrow_version() {
-  return duckdb::DuckDB::LibraryVersion();
-}
-}
-
-#ifndef DUCKDB_EXTENSION_MAIN
-#error DUCKDB_EXTENSION_MAIN not defined
-#endif

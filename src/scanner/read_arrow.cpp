@@ -10,7 +10,7 @@
 #include "duckdb/function/table/arrow.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/database.hpp"
-#include "duckdb/main/extension_util.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
 #include "duckdb/parser/expression/constant_expression.hpp"
 #include "duckdb/parser/expression/function_expression.hpp"
 #include "duckdb/parser/tableref/table_function_ref.hpp"
@@ -75,13 +75,13 @@ struct ReadArrowStream : ArrowTableFunction {
 
 TableFunction ReadArrowStreamFunction() { return ReadArrowStream::Function(); }
 
-void RegisterReadArrowStream(DatabaseInstance& db) {
+void RegisterReadArrowStream(ExtensionLoader& loader) {
   auto function = ReadArrowStream::Function();
-  ExtensionUtil::RegisterFunction(db, function);
+  loader.RegisterFunction(function);
   // So we can accept a list of paths as well e.g., ['file_1.arrow','file_2.arrow']
   function.arguments = {LogicalType::LIST(LogicalType::VARCHAR)};
-  ExtensionUtil::RegisterFunction(db, function);
-  auto& config = DBConfig::GetConfig(db);
+  loader.RegisterFunction(function);
+  auto& config = DBConfig::GetConfig(loader.GetDatabaseInstance());
   config.replacement_scans.emplace_back(ReadArrowStream::ScanReplacement);
 }
 
