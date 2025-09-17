@@ -1,10 +1,14 @@
 
 #include "write_arrow_stream.hpp"
 
+#include "duckdb/common/multi_file/multi_file_function.hpp"
+#include "file_scanner/arrow_multi_file_info.hpp"
+
 #include "duckdb/common/arrow/arrow_converter.hpp"
 #include "duckdb/common/serializer/buffered_file_writer.hpp"
 #include "duckdb/function/copy_function.hpp"
-#include "duckdb/main/extension_util.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
+#include "duckdb/main/settings.hpp"
 
 #include "nanoarrow/nanoarrow_ipc.hpp"
 
@@ -28,6 +32,7 @@ struct ArrowWriteBindData : public TableFunctionData {
   // case of "write it all then read it all" (at the expense of not being as
   // useful for streaming).
   idx_t row_group_size = 122880;
+  bool row_group_size_set = false;
   optional_idx row_groups_per_file;
   static constexpr const idx_t BYTES_PER_ROW = 1024;
   idx_t row_group_size_bytes{};
@@ -64,7 +69,12 @@ unique_ptr<FunctionData> ArrowWriteBind(ClientContext& context,
     }
 
     if (loption == "row_group_size" || loption == "chunk_size") {
+      if (bind_data->row_group_size_set) {
+        throw BinderException(
+            "ROW_GROUP_SIZE and ROW_GROUP_SIZE_BYTES are mutually exclusive");
+      }
       bind_data->row_group_size = option.second[0].GetValue<uint64_t>();
+      bind_data->row_group_size_set = true;
     } else if (loption == "row_group_size_bytes") {
       auto roption = option.second[0];
       if (roption.GetTypeMutable().id() == LogicalTypeId::VARCHAR) {
@@ -97,7 +107,7 @@ unique_ptr<FunctionData> ArrowWriteBind(ClientContext& context,
   }
 
   if (row_group_size_bytes_set) {
-    if (DBConfig::GetConfig(context).options.preserve_insertion_order) {
+    if (DBConfig::GetSetting<PreserveInsertionOrderSetting>(context)) {
       throw BinderException(
           "ROW_GROUP_SIZE_BYTES does not work while preserving insertion order. Use "
           "\"SET preserve_insertion_order=false;\" to disable preserving insertion "
@@ -237,7 +247,7 @@ void ArrowWriteFlushBatch(ClientContext& context, FunctionData& bind_data,
 
 }  // namespace
 
-void RegisterArrowStreamCopyFunction(DatabaseInstance& db) {
+void RegisterArrowStreamCopyFunction(ExtensionLoader& loader) {
   CopyFunction function("arrows");
   function.copy_to_bind = ArrowWriteBind;
   function.copy_to_initialize_global = ArrowWriteInitializeGlobal;
@@ -246,7 +256,7 @@ void RegisterArrowStreamCopyFunction(DatabaseInstance& db) {
   function.copy_to_combine = ArrowWriteCombine;
   function.copy_to_finalize = ArrowWriteFinalize;
   function.execution_mode = ArrowWriteExecutionMode;
-  function.copy_from_bind = ReadArrowStreamBindCopy;
+  function.copy_from_bind = MultiFileFunction<ArrowMultiFileInfo>::MultiFileBindCopy;
   function.copy_from_function = ReadArrowStreamFunction();
   function.prepare_batch = ArrowWritePrepareBatch;
   function.flush_batch = ArrowWriteFlushBatch;
@@ -255,7 +265,11 @@ void RegisterArrowStreamCopyFunction(DatabaseInstance& db) {
   function.rotate_next_file = ArrowWriteRotateNextFile;
 
   function.extension = "arrows";
-  ExtensionUtil::RegisterFunction(db, function);
+  loader.RegisterFunction(function);
+
+  function.name = "arrow";
+  function.extension = "arrow";
+  loader.RegisterFunction(function);
 }
 
 }  // namespace ext_nanoarrow
